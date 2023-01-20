@@ -1,0 +1,14 @@
+ 1  192.168.86.1 (192.168.86.1)  4.706 ms  4.119 ms  4.166 ms
+ 2  * * *
+ 3  * * *
+ 4  * * *
+ 5  * * *
+ 6  23-255-225-53.googlefiber.net (23.255.225.53)  20.526 ms  19.004 ms  19.802 ms
+ 7  ix-ae-61-0.tcore1.sqn-sanjose.as6453.net (216.6.33.138)  20.192 ms  20.377 ms  22.919 ms
+ 8  * if-ae-18-4.tcore2.sv1-santaclara.as6453.net (63.243.205.13)  29.345 ms *
+ 9  if-ae-0-2.tcore1.sv1-santaclara.as6453.net (63.243.251.1)  30.622 ms
+    if-ae-6-20.tcore1.eql-losangeles.as6453.net (64.86.252.66)  27.713 ms
+    if-ae-0-2.tcore1.sv1-santaclara.as6453.net (63.243.251.1)  29.613 ms
+10  * * *
+11  if-ae-30-2.tcore1.eql-losangeles.as6453.net (206.82.129.18)  30.120 ms  30.125 ms
+    a23-14-134-192.deploy.static.akamaitechnologies.com (23.14.134.192)  28.753 ms

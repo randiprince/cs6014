@@ -1,0 +1,1 @@
+The avg RT queueing delay is: 4.07 ms
