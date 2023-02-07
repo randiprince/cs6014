@@ -11,7 +11,7 @@ public class DNSRecord {
     int class_;
     int ttl_;
     int rdlength_;
-    String rdata_;
+    byte[] rdata_;
     Calendar date_;
 
     static DNSRecord decodeRecord(ByteArrayInputStream input, DNSMessage message) throws IOException {
@@ -29,14 +29,15 @@ public class DNSRecord {
         //  according to the TYPE and CLASS of the resource record.
         //  For example, the if the TYPE is A ( aka 1 )and the CLASS is IN (aka 1),
         // the RDATA field is a 4 octet ARPA Internet address
-        if (record.type_ == 1 && record.class_ == 1) {
-            byte[] address = input.readNBytes(4);
-            record.rdata_ = (address[0] & 0xff) + "." + (address[1] & 0xff) + "." + (address[2] & 0xff) + "." + (address[3] & 0xff);
-        } else {
-            // else we get byte array from full length and stringify it
-            byte[] rdata = input.readNBytes(record.rdlength_);
-            record.rdata_ = new String(rdata, StandardCharsets.US_ASCII); // needs to be case insensitive
-        }
+//        if (record.type_ == 1 && record.class_ == 1) {
+//            byte[] address = input.readNBytes(4);
+//            record.rdata_ = (address[0] & 0xff) + "." + (address[1] & 0xff) + "." + (address[2] & 0xff) + "." + (address[3] & 0xff);
+//        } else {
+//            // else we get byte array from full length and stringify it
+//            byte[] rdata = input.readNBytes(record.rdlength_);
+//            record.rdata_ = new String(rdata, StandardCharsets.US_ASCII); // needs to be case insensitive
+//        }
+        record.rdata_ = input.readNBytes(record.rdlength_);
 
         record.date_ = Calendar.getInstance();
         return record;
@@ -77,14 +78,15 @@ public class DNSRecord {
         int byte10 = rdlength_ & 0xff;
         outputStream.write(byte10);
         // rdata
-        if (type_ == 1 && class_ == 1) {
-            String[] address = rdata_.split("\\.");
-            for (int i = 0; i < rdlength_; i++) {
-                outputStream.write(Integer.parseInt(address[i]));
-            }
-        } else {
-            outputStream.write(rdata_.getBytes(), 0, rdlength_);
-        }
+//        if (type_ == 1 && class_ == 1) {
+//            String[] address = rdata_.split("\\.");
+//            for (int i = 0; i < rdlength_; i++) {
+//                outputStream.write(Integer.parseInt(address[i]));
+//            }
+//        } else {
+//            outputStream.write(rdata_.getBytes(), 0, rdlength_);
+//        }
+        outputStream.write(rdata_);
 
     }
 }

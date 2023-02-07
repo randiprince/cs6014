@@ -1,7 +1,9 @@
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class DNSQuestion {
     String[] name_;
@@ -31,5 +33,20 @@ public class DNSQuestion {
         output.write(byte3);
         int byte4 = class_ & 0xff;
         output.write(byte4);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DNSQuestion question = (DNSQuestion) o;
+        return type_ == question.type_ && class_ == question.class_ && Arrays.equals(name_, question.name_);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(type_, class_);
+        result = 31 * result + Arrays.hashCode(name_);
+        return result;
     }
 }

@@ -16,7 +16,7 @@ public class DNSServer {
     public static void main(String[] args) throws IOException {
         DNSServer server = new DNSServer();
         DNSCache cache = new DNSCache();
-        ArrayList<DNSRecord> responses = new ArrayList<>();
+        DNSMessage response;
         byte[] google = new byte[512];
 
         while (true) {
@@ -26,10 +26,12 @@ public class DNSServer {
                 server.receiveBuffer_ = server.receivePacket_.getData();
                 DNSMessage messageReq = DNSMessage.decodeMessage(server.receiveBuffer_);
 
-                    if (cache.containsRequest(messageReq.questions_.get(0))) {
+                    if (cache.containsRequest(messageReq)) {
                         System.out.println("request in CACHE!");
-                        DNSRecord answer = cache.getRecordFromCache(messageReq.questions_.get(0));
-                        responses.add(answer);
+                        DNSRecord answer = cache.getRecordFromCache(messageReq);
+                        ArrayList<DNSRecord> answers = new ArrayList<>();
+                        answers.add(answer);
+                        response = DNSMessage.buildResponse(messageReq, answers);
                     } else {
                         System.out.println("request not in cache need to request from google");
                         DatagramPacket googleRequestPacket = new DatagramPacket(server.receiveBuffer_, server.receiveBuffer_.length, InetAddress.getByName("8.8.8.8"), 53);
@@ -40,20 +42,18 @@ public class DNSServer {
                         google = googleResponsePacket.getData();
                         System.out.println("Google response packet received!");
 
-                        // now to decode stuff from google
-                        DNSMessage googleMessage = DNSMessage.decodeMessage(google);
+                        // now to decode stuff from googled
+                        response = DNSMessage.decodeMessage(google);
                         System.out.println("Google message decoded!");
                          //now that we decoded the google message we can check if we have responses
-                        if (googleMessage.answers_.size() > 0) {
-                            responses.add(googleMessage.answers_.get(0)); // add to responses
-                            cache.addToCache(messageReq.questions_.get(0), googleMessage.answers_.get(0)); // add to cache
+                        if (response.answers_.size() > 0) {
+                            cache.addToCache(messageReq.questions_.get(0), response.answers_.get(0)); // add to cache
                         }
                         DatagramPacket clientPacket = new DatagramPacket(google, google.length, server.receivePacket_.getAddress(),server.receivePacket_.getPort());
                         server.clientSocket_.send(clientPacket);
                 }
 
-                DNSMessage msgResponse = DNSMessage.buildResponse(messageReq, responses);
-                DatagramPacket responsePacket = new DatagramPacket(msgResponse.toBytes(), msgResponse.toBytes().length, server.receivePacket_.getAddress(), server.receivePacket_.getPort());
+                DatagramPacket responsePacket = new DatagramPacket(response.toBytes(), response.toBytes().length, server.receivePacket_.getAddress(), server.receivePacket_.getPort());
                 server.clientSocket_.send(responsePacket); // send response back to client socket
 
             } catch (IOException e) {
@@ -61,6 +61,6 @@ public class DNSServer {
                 break;
             }
         }
-        server.clientSocket_.close();
+//        server.clientSocket_.close();
     }
 }
