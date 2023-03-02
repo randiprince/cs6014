@@ -1,9 +1,0 @@
-# ninja log v5
-2	489	1677727924700667076	CMakeFiles/BlockStream.dir/main.cpp.o	b520fc8af1b7125f
-3	449	1677721995757095444	CMakeFiles/BlockStream.dir/blockCypher.cpp.o	a15bbd023aa347f2
-489	528	1677727924742443811	BlockStream	b0927a82842a54f9
-3	448	1677721995754415210	CMakeFiles/BlockStream.dir/RC4.cpp.o	2d0a781e17fbf896
-2	254	1677731136895835047	CMakeFiles/BlockStream.dir/RC4.cpp.o	9bf548aedd1ce41b
-2	259	1677731136900999466	CMakeFiles/BlockStream.dir/blockCypher.cpp.o	c0dcbeb7f591877c
-2	316	1677731136957218661	CMakeFiles/BlockStream.dir/main.cpp.o	e285fef69eaeb1a4
-316	338	1677731136980663964	BlockStream	b0927a82842a54f9
