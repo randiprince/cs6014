@@ -1,0 +1,5 @@
+# ninja log v5
+1	266	1677731343734076205	CMakeFiles/CryptoHW1.dir/RC4.cpp.o	385eb3ca83891b0b
+0	269	1677731343737524665	CMakeFiles/CryptoHW1.dir/blockCypher.cpp.o	29ebf615de149aeb
+0	324	1677731343792349193	CMakeFiles/CryptoHW1.dir/main.cpp.o	771820d356d4868
+324	348	1677731343817858081	CryptoHW1	a0e0e2ec42bcd6d2

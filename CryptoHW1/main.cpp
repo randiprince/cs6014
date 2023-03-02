@@ -23,27 +23,27 @@ void blockCypher() {
 
 
 std::string RC4encrypt(std::string message, std::string password) {
-    uint8_t m[message.size()];
+    uint8_t encryptedMsg[message.size()];
     for (int i = 0; i < message.size(); i++) {
-        m[i] = message[i];
+        encryptedMsg[i] = message[i];
     }
     RC4 rc4 = RC4(password);
     std::string encrypt;
     for (int i = 0; i < message.size(); i++) {
-        encrypt += rc4.getNextByte() xor m[i]; // encrypt but xor each piece of message with next byte
+        encrypt += rc4.getNextByte() xor encryptedMsg[i]; // encrypt but xor each piece of message with next byte
     }
     return encrypt;
 }
 
 std::string RC4decrypt(std::string encryptedMsg, std::string password) {
-    uint8_t m[encryptedMsg.size()];
+    uint8_t decryptedMsg[encryptedMsg.size()];
     for (int i = 0; i < encryptedMsg.size(); i++) {
-        m[i] = encryptedMsg[i];
+        decryptedMsg[i] = encryptedMsg[i];
     }
     RC4 rc4 = RC4(password);
     std::string decrypt;
     for (int i = 0; i < encryptedMsg.size(); i++) {
-        decrypt += rc4.getNextByte() xor m[i]; // encrypt but xor each piece of message with next byte
+        decrypt += rc4.getNextByte() xor decryptedMsg[i]; // encrypt but xor each piece of message with next byte
     }
     return decrypt;
 }
