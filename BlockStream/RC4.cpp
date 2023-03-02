@@ -28,22 +28,3 @@ uint8_t RC4::getNextByte() {
     int output = S[(S[i] + S[j]) % 256];
     return S[output];
 }
-
-//std::string RC4encrypt(std::string message, std::string password) {
-//    uint8_t m[message.size()];
-//    for (int i = 0; i < message.size(); i++) {
-//        m[i] = message[i];
-//    }
-//    RC4 rc4 = RC4(std::move(password));
-//    std::string encrypt;
-//    for (int i = 0; i < message.size(); i++) {
-//        encrypt += rc4.getNextByte() xor m[i]; // encrypt but xor each piece of message with next byte
-//    }
-//    return encrypt;
-//}
-
-//std::string RC4decrypt(std::string encryptedMsg, std::string password) {
-//    for (int i = 0; i < encryptedMsg.size(); i++) {
-//        encrypt += rc4.getNextByte() xor m[i]; // encrypt but xor each piece of message with next byte
-//    }
-//}

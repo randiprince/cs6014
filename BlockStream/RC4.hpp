@@ -17,8 +17,6 @@ public:
     RC4();
     RC4(std::string password);
     uint8_t getNextByte();
-//    std::string RC4encrypt(std::string message, std::string password);
-//    std::string RC4decrypt(std::string encryptedMsg, std::string password);
 };
 
 

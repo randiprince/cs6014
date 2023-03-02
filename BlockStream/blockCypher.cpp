@@ -37,72 +37,72 @@ void createTables(std::array<std::array<uint8_t, 256>, 8>&table) {
 }
 
 std::string encrypt(std::string &message, std::array<uint8_t, 8>&key, std::array<std::array<uint8_t, 256>, 8>&table) {
-    uint8_t m[message.size()];
+    uint8_t encryptedMsg[message.size()];
     for (int i = 0; i < message.size(); i++) {
-        m[i] = message[i];
+        encryptedMsg[i] = message[i];
     }
     for (int i = 0; i < 16; i++) {
         for (int j = 0; j < message.size(); j++) {
-            m[j] = m[j] xor key[j % 8];
-            m[j] = table[j % 8][m[j]];
+            encryptedMsg[j] = encryptedMsg[j] xor key[j % 8];
+            encryptedMsg[j] = table[j % 8][encryptedMsg[j]];
         }
-        uint8_t temp[message.size()];
+        uint8_t tempArr[message.size()];
         for (int j = 0; j < message.size(); j++) {
-            temp[j] = m[j] >> 7; // shift everything to the right 7 bits
+            tempArr[j] = encryptedMsg[j] >> 7; // shift everything to the right 7 bits
         }
         for(int k = 0; k < message.size(); k++){
             if (k == message.size() - 1) { // for the byte use the first b/c no next byte
-                m[k] = (m[k] << 1 | temp[0]);
+                encryptedMsg[k] = (encryptedMsg[k] << 1 | tempArr[0]);
             } else {
-                m[k] = (m[k] << 1 | temp[k + 1]);
+                encryptedMsg[k] = (encryptedMsg[k] << 1 | tempArr[k + 1]);
             }
 
         }
 
     }
-    std::string encryptedString;
-    for(int n = 0; n < message.size(); n++){
-        encryptedString += m[n];
+    std::string encryptString;
+    for(int i = 0; i < message.size(); i++){
+        encryptString += encryptedMsg[i];
     }
-    return encryptedString;
+    return encryptString;
 }
 
 std::string decrypt(std::string &encryptedMessage, std::array<uint8_t, 8>&key, std::array<std::array<uint8_t, 256>, 8>&table) {
-    uint8_t m[encryptedMessage.size()];
+    uint8_t decryptedMsg[encryptedMessage.size()];
     for (int p = 0; p < encryptedMessage.size(); p++) {
-        m[p] = encryptedMessage[p];
+        decryptedMsg[p] = encryptedMessage[p];
     }
     for (int i = 0; i < 16; i++) {
-        uint8_t temp[encryptedMessage.size()];
+        uint8_t tempArr[encryptedMessage.size()];
         for (int j = 0; j < encryptedMessage.size(); j++) {
-            temp[j] = m[j] << 7;
+            tempArr[j] = decryptedMsg[j] << 7;
         }
 
         for(int k = 0; k < encryptedMessage.size(); k++) {
             if (k == 0) {
-                m[k] = (m[k] >> 1 | temp[encryptedMessage.size() - 1]);
+                decryptedMsg[k] = (decryptedMsg[k] >> 1 | tempArr[encryptedMessage.size() - 1]);
             } else {
-                m[k] = (m[k] >> 1 | temp[k - 1]);
+                decryptedMsg[k] = (decryptedMsg[k] >> 1 | tempArr[k - 1]);
             }
 
         }
         for (int j = 0; j < encryptedMessage.size(); j++) {
             for (int n = 255; n >= 0; n--) {
-                if (m[j] == table[j % 8][n]) {
-                    m[j] = n;
+                if (decryptedMsg[j] == table[j % 8][n]) {
+                    decryptedMsg[j] = n;
                     break;
                 }
             }
         }
 
         for (int j = 0; j < encryptedMessage.size(); j++) {
-            m[j] = m[j] xor key[j % 8];
+            decryptedMsg[j] = decryptedMsg[j] xor key[j % 8];
         }
 
     }
-    std::string encryptedString;
+    std::string decryptString;
     for(int n = 0; n < encryptedMessage.size(); n++){
-        encryptedString += m[n];
+        decryptString += decryptedMsg[n];
     }
-    return encryptedString;
+    return decryptString;
 }
