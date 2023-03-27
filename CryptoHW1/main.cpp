@@ -16,7 +16,7 @@ void blockCypher() {
 
     std::string message = "hello";
     std::string encrypted = encrypt(message, key, table);
-    std::cout << encrypted << "\n";
+    std::cout << "encrypted: " << encrypted << "\n";
     std::string decrypted = decrypt(encrypted, key, table);
     std::cout << decrypted << "\n";
 }
@@ -55,33 +55,40 @@ int main() {
     std::string passwordTwo = "passwd";
     std::string message = "hello world!";
     std::string messageTwo = "hello world?";
-//    std::string encrypt = RC4encrypt(message, password);
-//    std::cout << encrypt<< "\n";
-//    std::string decrypt = RC4decrypt(encrypt, password);
-//    std::cout << decrypt<< "\n";
+    std::cout << "test encryption and decryption of 'hello world!' using SAME password: " << std::endl;
+    std::string  encryptOne = RC4encrypt(message, password);
+    std::cout << "encrypted: " << encryptOne<< "\n";
+    std::string decryptOne = RC4decrypt(encryptOne, password);
+    std::cout << "decrypted with same password: " << decryptOne<< "\n";
+    std::cout << "----------------------------------" << std::endl;
+    std::cout << "test encryption and decryption of 'hello world!' using INCORRECT password: " << std::endl;
     //Verify that decrypting a message with a different key than the encryption key does not reveal the plaintext.
     std::string encrypt = RC4encrypt(message, password);
-    std::cout << encrypt<< "\n"; // output is =�Q����+CVe
+    std::cout << "encrypted: " << encrypt<< "\n"; // output is =�Q����+CVe
     std::string decrypt = RC4decrypt(encrypt, passwordTwo);
-    std::cout << decrypt<< "\n"; // output with diff password is �-�0�Ȑ	_�D aka plaintext not revealed
+    std::cout << "decrypted with wrong password: " << decrypt<< "\n"; // output with diff password is �-�0�Ȑ	_�D aka plaintext not revealed
+    std::cout << "----------------------------------" << std::endl;
 
     // Verify that encrypting 2 messages using the same keystream is insecure
     // (what do you expect to see if you xor the two encrypted messages?)
+    std::cout << "test encryption insecurity of two messages 'hello world!' and 'hello world?' and with same keystream: " << std::endl;
     std::string RCencrypt2 = RC4encrypt(messageTwo, password);
-    std::cout << encrypt<< "\n";
-    std::cout << RCencrypt2<< "\n";
+    std::cout << "encrypted msg 1: " << encryptOne << "\n";
+    std::cout << "encrypted msg 2: " << RCencrypt2<< "\n";
     std::string combinedOutput;
     for(int i = 0; i < encrypt.size(); i++){
         combinedOutput += encrypt[i] ^ RCencrypt2[i];
-        std::cout <<  combinedOutput << "\n";
+//        std::cout <<  combinedOutput << "\n";
     }
-    std::cout <<  combinedOutput + "\n"; // NULLNULLNULLNULL
+    std::cout << "xor of two msg encrypted with same key: " <<  combinedOutput + "\n"; // NULLNULLNULLNULL
+    std::cout << "----------------------------------" << std::endl;
 
+    std::cout << "test to show possibility of bit flipping attack on 'Your salary is $1000': " << std::endl;
     //Modify part of a message using a bit-flipping attack. For example, try sending
     // the message "Your salary is $1000" encrypted with RC4. Modify the cyphertext so that
     // when decrypted is says that your salary is 9999 instead. Hint: this should just require using xor.
     std::string bitFlipEncrypt = RC4encrypt("Your salary is $1000", password);
-    std::cout << bitFlipEncrypt<< "\n";
+    std::cout << "bit flip encrypted: " << bitFlipEncrypt<< "\n";
     std::string bitflipMsgToDecrypt;
     for (int i = 0; i < bitFlipEncrypt.size(); i++) {
         if (i >= 17) { // 17, 18, 19 are zeros. want to change them to 9s
@@ -93,6 +100,7 @@ int main() {
         }
     }
     std::string bitFlipDecrypt = RC4encrypt(bitflipMsgToDecrypt, password); // pass in bitflip msg to decrypt
-    std::cout << bitFlipDecrypt << "\n"; // gives you: Your salary is $9999
+    std::cout << "bit flip decrypted: " << bitFlipDecrypt << "\n"; // gives you: Your salary is $9999
+    std::cout << "----------------------------------" << std::endl;
     return 0;
 }
