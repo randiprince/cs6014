@@ -14,7 +14,7 @@ informational purposes only to highlight the intended purpose of each method.
 
 from __future__ import with_statement
 
-import getpass
+from getpass import getpass
 from functools import wraps
 import os
 import sys
@@ -60,7 +60,7 @@ class EncFS(Operations):
         self.root = root
         self.history = {}
         self.netFD = 3
-        self.password = getpass.getpass()
+        self.password = self.password = bytes(getpass("Enter your password: "), "utf-8")
 
     def destroy(self, path):
         """Clean up any resources used by the filesystem.
@@ -129,19 +129,19 @@ class EncFS(Operations):
         full_path = self._full_path(path)
         return os.chown(full_path, uid, gid)
 
-    def decryptFunc(self, file):
-        salt = os.read(file, 16)
-        data = os.read(file, os.path.getsize(file))
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=salt,
-            iterations=480000,
-        )
-        key = base64.urlsafe_b64encode(kdf.derive(str.encode(self.password)))
-        f = Fernet(key)
-        message = f.decrypt(data)
-        return message
+    # def decryptFunc(self, file):
+    #     salt = os.read(file, 16)
+    #     data = os.read(file, os.path.getsize(file))
+    #     kdf = PBKDF2HMAC(
+    #         algorithm=hashes.SHA256(),
+    #         length=32,
+    #         salt=salt,
+    #         iterations=480000,
+    #     )
+    #     key = base64.urlsafe_b64encode(kdf.derive(str.encode(self.password)))
+    #     f = Fernet(key)
+    #     message = f.decrypt(data)
+    #     return message
     @logged
     def getattr(self, path, fh=None):
         """Return file attributes.
@@ -155,23 +155,36 @@ class EncFS(Operations):
         """
         full_path = self._full_path(path)
         st = os.lstat(full_path)
-        print(
-            "FIXME FIXME: update so that the size reported here is the length of the decrypted data, not the physical file size!")
+
         props = dict((key, getattr(st, key)) for key in ('st_atime', 'st_ctime',
                                                          'st_gid', 'st_mode', 'st_mtime', 'st_nlink', 'st_size',
                                                          'st_uid'))
 
-        '''TODO FINISH ME TO UPDATE THE st_size fiel to the size of the unencrypted content'''
-        if not os.path.exists(full_path):
+        if not os.path.exists(full_path) or os.path.isdir(full_path):
+            print("path does not exist or it is a directory. we need a file!")
             return props
         if path in self.history:
+            print("fount the file! message is...", self.history[path])
             props['st_size'] = len(self.history[path])
             return props
+        else:
+            print("file not found in the directory. we need a file!")
 
-        file = os.open(full_path, os.O_RDONLY)
-        decrypted_val = self.decryptFunc(file)
-        os.close(file)
-        props['st_size'] = len(decrypted_val)
+        file = open(full_path, "rb")
+        salt = file.read(16)
+        encryptedMsg = file.read()
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=480000,
+        )
+        key = base64.urlsafe_b64encode(kdf.derive(self.password))
+        f = Fernet(key)
+        decryptedMsg = f.decrypt(encryptedMsg)
+        print("the decrypted message is: ", decryptedMsg)
+        file.close()
+        props['st_size'] = len(decryptedMsg)
 
         return props
 
@@ -330,27 +343,36 @@ class EncFS(Operations):
 
         """
         full_path = self._full_path(path)
-        if not os.path.exists(full_path):
-            print("\n-----\n\nFile doesn't exist.\n\n-----\n")
-            return -1
-        print("THE FULL PATH IS: ", full_path)
-        file = os.open(full_path, os.O_RDWR)
-        print("THE FILE PATH: " + self.history[path])
+        file = open(full_path, "rb")
+
         if path in self.history:
+            print("\n-----\n\nFILE ALREADY OPEN\n\n-----\n")
             return -1
         if not os.path.isfile(full_path):
+            print("\n-----\n\nFILE DOES NOT EXIST\n\n-----\n")
             return -1
-        decryptedVal = self.decryptFunc(file)
-        self.history[path] = decryptedVal
-        os.close(file)
+        salt = file.read(16)
+        encryptedMsg = file.read()
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=480000,
+        )
+        key = base64.urlsafe_b64encode(kdf.derive(self.password))
+        f = Fernet(key)
+        decryptedMsg = f.decrypt(encryptedMsg)
+        print("the decrypted message is: ", decryptedMsg)
+        self.history[path] = decryptedMsg
+        file.close()
         self.netFD += 1
         return self.netFD
     @logged
     def create(self, path, mode, fi=None):
         full_path = self._full_path(path)
-
-        file = os.open(full_path, os.O_CREAT | os.O_RDWR)
         self.history[path] = bytes()
+        file = os.open(full_path, os.O_CREAT | os.O_RDWR)
+
         self.netFD += 1
         os.close(file)
         return self.netFD
@@ -366,10 +388,10 @@ class EncFS(Operations):
 
         """
         full_path = self._full_path(path)
-        if not os.path.exists(full_path):
-            print("\n-----\n\nFile doesn't exist.\n\n-----\n")
+        if path not in self.history:
+            print("\n-----\n\npath doesn't exist in history.\n\n-----\n")
             return -1
-        file = self.history[path]
+        file = self.history.get(path)
         return file[offset: offset + length]
 
     @logged
@@ -378,10 +400,10 @@ class EncFS(Operations):
 
         """
         full_path = self._full_path(path)
-        if not os.path.exists(full_path):
-            print("\n-----\n\nFile doesn't exist.\n\n-----\n")
+        if path not in self.history:
+            print("\n-----\n\npath doesn't exist in history.\n\n-----\n")
             return -1
-        file = self.history[path]
+        file = self.history.get(path)
         self.history[path] = file[:offset] + buf
 
         return len(buf)
@@ -396,13 +418,15 @@ class EncFS(Operations):
 
         """
         full_path = self._full_path(path)
-        if not os.path.exists(full_path):
-            print("\n-----\n\nFile doesn't exist.\n\n-----\n")
+        if path not in self.history:
+            print("\n-----\n\npath doesn't exist in history.\n\n-----\n")
             return -1
         file = self.history[path]
         if len(file) > length:
             self.history[path] = file[:length]
-        else:
+        elif len(file) < length:
+            size = length - len(file)
+            self.history[path] = file + bytes(size)
             return 0
 
     # skip
@@ -434,9 +458,9 @@ class EncFS(Operations):
         """
 
         full_path = self._full_path(path)
-        if not os.path.exists(full_path):
-            print("\n-----\n\nFile doesn't exist.\n\n-----\n")
-            return -1
+        # if not os.path.exists(full_path):
+        #     print("\n-----\n\nFile doesn't exist.\n\n-----\n")
+        #     return -1
         salt = os.urandom(16)
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
@@ -448,12 +472,11 @@ class EncFS(Operations):
         f = Fernet(key)
         encryptedMessage = f.encrypt(self.history[path])
 
-        file = os.open(full_path, os.O_WRONLY | os.O_TRUNC)
+        file = open(full_path, "wb")
         os.write(file, salt)
-        os.write(file, encryptedMessage)
-        os.close(file)
+        file.write(encryptedMessage + salt)
+        file.close()
         del self.history[path]
-
         return
 
     # skip
